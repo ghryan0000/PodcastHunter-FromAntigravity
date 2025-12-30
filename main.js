@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, Menu, MenuItem } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -17,6 +17,26 @@ function createWindow() {
             contextIsolation: true,
             preload: path.join(__dirname, 'preload.js'),
         },
+    });
+
+    // Enable Copy/Paste Context Menu
+    win.webContents.on('context-menu', (event, params) => {
+        const menu = new Menu();
+
+        // Add Copy/Paste for input fields
+        if (params.isEditable) {
+            menu.append(new MenuItem({ label: 'Cut', role: 'cut' }));
+            menu.append(new MenuItem({ label: 'Copy', role: 'copy' }));
+            menu.append(new MenuItem({ label: 'Paste', role: 'paste' }));
+            menu.append(new MenuItem({ type: 'separator' }));
+            menu.append(new MenuItem({ label: 'Select All', role: 'selectAll' }));
+        } else if (params.selectionText && params.selectionText.length > 0) {
+            menu.append(new MenuItem({ label: 'Copy', role: 'copy' }));
+        }
+
+        if (menu.items.length > 0) {
+            menu.popup();
+        }
     });
 
     if (isDev) {

@@ -1,0 +1,42 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff4d6d;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#c9184a;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="15" />
+      <feOffset dx="0" dy="10" result="offsetblur" />
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3" />
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+  <!-- Background Squircle with Thicker Border (Terminal Style) -->
+  <rect x="128" y="128" width="768" height="768" rx="180" fill="url(#grad)" stroke="#ffffff" stroke-width="40" stroke-opacity="0.8" filter="url(#shadow)" />
+  
+  <!-- Outer hairline for crispness -->
+  <rect x="128" y="128" width="768" height="768" rx="180" fill="none" stroke="white" stroke-width="1" stroke-opacity="0.5" />
+  
+  <!-- Radar Rings -->
+  <circle cx="512" cy="480" r="120" fill="none" stroke="white" stroke-width="8" stroke-opacity="0.2" />
+  <circle cx="512" cy="480" r="180" fill="none" stroke="white" stroke-width="8" stroke-opacity="0.15" />
+  <circle cx="512" cy="480" r="240" fill="none" stroke="white" stroke-width="8" stroke-opacity="0.1" />
+
+  <!-- Microphone Handle/Stand -->
+  <rect x="500" y="650" width="24" height="60" rx="12" fill="white" fill-opacity="0.9" />
+  <rect x="440" y="710" width="144" height="16" rx="8" fill="white" fill-opacity="0.9" />
+  
+  <!-- Microphone Body -->
+  <rect x="432" y="340" width="160" height="300" rx="80" fill="white" fill-opacity="0.95" />
+  
+  <!-- Microphone Detail -->
+  <rect x="432" y="480" width="160" height="10" fill="black" fill-opacity="0.1" />
+  
+  <!-- Microphone Stand Arms -->
+  <path d="M 400 480 Q 400 660 512 660 Q 624 660 624 480" fill="none" stroke="white" stroke-width="16" stroke-linecap="round" stroke-opacity="0.9" />
+</svg>

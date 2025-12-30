@@ -1,5 +1,6 @@
 {
-  "name": "download-podcast-audio-&-script",
+  "name": "podcasthunter-audio-writer",
+  "homepage": "https://ghryan0000.github.io/PodcastHunter_fromAntigravity/",
   "private": true,
   "version": "0.0.0",
   "type": "module",

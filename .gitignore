@@ -16,9 +16,12 @@ dist-ssr
 .vscode/*
 !.vscode/extensions.json
 .idea
+.env
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+
+# Electron build artifacts
+release/
+mac-arm64/
+out/
+dist/
+node_modules/

@@ -1,0 +1,17 @@
+{
+    "name": "PodcastHunter & AudioWriter",
+    "short_name": "PodcastHunter",
+    "description": "Extract stream URLs from podcast pages and transcribe audio with Gemini AI.",
+    "start_url": "./",
+    "display": "standalone",
+    "background_color": "#ffe4e6",
+    "theme_color": "#f43f5e",
+    "icons": [
+        {
+            "src": "https://cdn-icons-png.flaticon.com/512/3039/3039343.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}

@@ -27,6 +27,32 @@ const ResultCard: React.FC<ResultCardProps> = ({ streamUrl, onReset, isUpload = 
   const [isGeneratingDoc, setIsGeneratingDoc] = useState(false);
   const [showManualFallback, setShowManualFallback] = useState(false);
 
+  // Media Session API Integration
+  useEffect(() => {
+    if ('mediaSession' in navigator && streamUrl) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: fileName || (isUpload ? "Uploaded Audio" : "Extracted Podcast"),
+        artist: "PodcastHunter",
+        album: isUpload ? "Manual Upload" : "Web Scan",
+        artwork: [
+          { src: 'https://cdn-icons-png.flaticon.com/512/3039/3039343.png', sizes: '512x512', type: 'image/png' }
+        ]
+      });
+
+      navigator.mediaSession.setActionHandler('play', togglePlay);
+      navigator.mediaSession.setActionHandler('pause', togglePlay);
+      navigator.mediaSession.setActionHandler('seekbackward', () => skip(-10));
+      navigator.mediaSession.setActionHandler('seekforward', () => skip(10));
+      navigator.mediaSession.setActionHandler('previoustrack', () => { audioRef.current && (audioRef.current.currentTime = 0); });
+    }
+  }, [streamUrl, fileName, isUpload]);
+
+  useEffect(() => {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+    }
+  }, [isPlaying]);
+
   // Audio Handlers
   const togglePlay = () => {
     if (!audioRef.current) return;

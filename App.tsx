@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Search, Globe, AlertCircle, UploadCloud, FileAudio, Link as LinkIcon } from 'lucide-react';
 import Header from './components/Header';
 import StepIndicator from './components/StepIndicator';
@@ -15,6 +15,31 @@ function App() {
   const [extractedStreamUrl, setExtractedStreamUrl] = useState<string | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Persistence: Load on mount
+  useEffect(() => {
+    const savedUrl = localStorage.getItem('ph_last_url');
+    const savedStream = localStorage.getItem('ph_last_stream');
+    const savedMode = localStorage.getItem('ph_last_mode') as 'scan' | 'upload';
+
+    if (savedUrl) setUrl(savedUrl);
+    if (savedMode) setMode(savedMode || 'scan');
+    if (savedStream && !savedStream.startsWith('blob:')) { // Don't persist temporary blobs
+      setExtractedStreamUrl(savedStream);
+      setAppState(AppState.SUCCESS);
+    }
+  }, []);
+
+  // Persistence: Save on change
+  useEffect(() => {
+    localStorage.setItem('ph_last_url', url);
+    localStorage.setItem('ph_last_mode', mode);
+    if (extractedStreamUrl && !extractedStreamUrl.startsWith('blob:')) {
+      localStorage.setItem('ph_last_stream', extractedStreamUrl);
+    } else if (appState === AppState.IDLE) {
+      localStorage.removeItem('ph_last_stream');
+    }
+  }, [url, mode, extractedStreamUrl, appState]);
 
   const [steps, setSteps] = useState<StepStatus[]>([
     { id: 'fetch', label: 'Fetching Source Code', status: 'pending' },
@@ -57,9 +82,9 @@ function App() {
       setAppState(AppState.ANALYZING_CODE);
       updateStepStatus('analyze', 'loading');
       updateStepStatus('extract', 'loading');
-      
+
       const streamUrl = await extractStreamUrlFromSource(sourceCode);
-      
+
       if (!streamUrl) {
         updateStepStatus('analyze', 'completed'); // Analysis worked, just didn't find it
         updateStepStatus('extract', 'error');
@@ -68,7 +93,7 @@ function App() {
 
       updateStepStatus('analyze', 'completed');
       updateStepStatus('extract', 'completed');
-      
+
       setExtractedStreamUrl(streamUrl);
       setAppState(AppState.SUCCESS);
 
@@ -125,104 +150,102 @@ function App() {
       <Header />
 
       <main className="flex-1 container mx-auto px-4 py-8 flex flex-col items-center">
-        
+
         {/* Input Section */}
         <div className={`w-full max-w-2xl transition-all duration-500 ${isProcessing ? 'opacity-50 pointer-events-none blur-[1px]' : 'opacity-100'}`}>
-           <div className="bg-white/95 backdrop-blur-md p-2 rounded-3xl border border-white/50 shadow-2xl shadow-rose-200/40 overflow-hidden">
-              
-              {/* Tabs */}
-              <div className="flex p-1 gap-1 mb-2 bg-gray-200/80 rounded-2xl ring-1 ring-gray-300/10">
-                <button
-                  onClick={() => {
-                    setMode('scan');
-                    if (appState === AppState.SUCCESS) handleReset();
-                  }}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 transform ${
-                    mode === 'scan' 
-                      ? 'bg-rose-50 text-rose-900 shadow-lg shadow-rose-200/50 ring-1 ring-rose-200 hover:scale-[1.03] hover:shadow-xl hover:shadow-rose-300/40' 
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-white/20 hover:scale-[1.01]'
-                  }`}
-                >
-                  <LinkIcon className={`w-4 h-4 ${mode === 'scan' ? 'text-rose-600' : ''}`} />
-                  Paste URL
-                </button>
-                <button
-                  onClick={() => {
-                    setMode('upload');
-                    if (appState === AppState.SUCCESS) handleReset();
-                  }}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 transform ${
-                    mode === 'upload' 
-                      ? 'bg-rose-50 text-rose-900 shadow-lg shadow-rose-200/50 ring-1 ring-rose-200 hover:scale-[1.03] hover:shadow-xl hover:shadow-rose-300/40' 
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-white/20 hover:scale-[1.01]'
-                  }`}
-                >
-                  <UploadCloud className={`w-4 h-4 ${mode === 'upload' ? 'text-rose-600' : ''}`} />
-                  Upload File
-                </button>
-              </div>
+          <div className="bg-white/95 backdrop-blur-md p-2 rounded-3xl border border-white/50 shadow-2xl shadow-rose-200/40 overflow-hidden">
 
-              <div className="p-4 sm:p-6">
-                {mode === 'scan' ? (
-                  <form onSubmit={handleAnalyze} className="relative animate-in fade-in slide-in-from-left-4 duration-300">
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">
-                      Target Website URL
-                    </label>
-                    <div className="relative group">
-                      <div className="relative flex items-center bg-gray-50 rounded-2xl overflow-hidden border border-gray-200 focus-within:border-rose-500 focus-within:ring-4 focus-within:ring-rose-500/10 transition-all">
-                        <Globe className="ml-4 w-5 h-5 text-gray-400" />
-                        <input
-                          type="url"
-                          required
-                          placeholder="https://example.com/podcast-page"
-                          className="w-full bg-transparent border-none focus:ring-0 text-gray-900 placeholder-gray-400 py-4 px-4 h-14 outline-none font-medium"
-                          value={url}
-                          onChange={(e) => setUrl(e.target.value)}
-                        />
-                        <button 
-                          type="submit"
-                          disabled={!url || isProcessing}
-                          className="mr-2 px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-rose-500/20 active:scale-95"
-                        >
-                          <Search className="w-4 h-4" />
-                          {appState === AppState.SUCCESS ? 'Rescan' : 'Scan'}
-                        </button>
-                      </div>
-                    </div>
-                    <p className="text-xs text-gray-400 mt-3 ml-2">
-                      Supports pages where <code>streamURL</code> is defined in the source script.
-                    </p>
-                  </form>
-                ) : (
-                  <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">
-                      Upload Audio File
-                    </label>
-                    <div 
-                      onClick={triggerFileUpload}
-                      className="border-2 border-dashed border-gray-200 hover:border-rose-400 hover:bg-rose-50/50 rounded-2xl p-10 flex flex-col items-center justify-center cursor-pointer group transition-all"
-                    >
-                      <input 
-                        type="file" 
-                        ref={fileInputRef}
-                        onChange={handleFileUpload}
-                        accept="audio/*"
-                        className="hidden" 
+            {/* Tabs */}
+            <div className="flex p-1 gap-1 mb-2 bg-gray-200/80 rounded-2xl ring-1 ring-gray-300/10">
+              <button
+                onClick={() => {
+                  setMode('scan');
+                  if (appState === AppState.SUCCESS) handleReset();
+                }}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 transform ${mode === 'scan'
+                  ? 'bg-rose-50 text-rose-900 shadow-lg shadow-rose-200/50 ring-1 ring-rose-200 hover:scale-[1.03] hover:shadow-xl hover:shadow-rose-300/40'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/20 hover:scale-[1.01]'
+                  }`}
+              >
+                <LinkIcon className={`w-4 h-4 ${mode === 'scan' ? 'text-rose-600' : ''}`} />
+                Paste URL
+              </button>
+              <button
+                onClick={() => {
+                  setMode('upload');
+                  if (appState === AppState.SUCCESS) handleReset();
+                }}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 transform ${mode === 'upload'
+                  ? 'bg-rose-50 text-rose-900 shadow-lg shadow-rose-200/50 ring-1 ring-rose-200 hover:scale-[1.03] hover:shadow-xl hover:shadow-rose-300/40'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/20 hover:scale-[1.01]'
+                  }`}
+              >
+                <UploadCloud className={`w-4 h-4 ${mode === 'upload' ? 'text-rose-600' : ''}`} />
+                Upload File
+              </button>
+            </div>
+
+            <div className="p-4 sm:p-6">
+              {mode === 'scan' ? (
+                <form onSubmit={handleAnalyze} className="relative animate-in fade-in slide-in-from-left-4 duration-300">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">
+                    Target Website URL
+                  </label>
+                  <div className="relative group">
+                    <div className="relative flex items-center bg-gray-50 rounded-2xl overflow-hidden border border-gray-200 focus-within:border-rose-500 focus-within:ring-4 focus-within:ring-rose-500/10 transition-all">
+                      <Globe className="ml-4 w-5 h-5 text-gray-400" />
+                      <input
+                        type="url"
+                        required
+                        placeholder="https://example.com/podcast-page"
+                        className="w-full bg-transparent border-none focus:ring-0 text-gray-900 placeholder-gray-400 py-4 px-4 h-14 outline-none font-medium"
+                        value={url}
+                        onChange={(e) => setUrl(e.target.value)}
                       />
-                      <div className="w-16 h-16 bg-white shadow-lg rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform text-rose-500">
-                        <FileAudio className="w-8 h-8" />
-                      </div>
-                      <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-rose-600 transition-colors">
-                        Click to Upload MP3
-                      </h3>
-                      <p className="text-gray-400 text-sm font-medium">
-                        Supports MP3, WAV, M4A
-                      </p>
+                      <button
+                        type="submit"
+                        disabled={!url || isProcessing}
+                        className="mr-2 px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-rose-500/20 active:scale-95"
+                      >
+                        <Search className="w-4 h-4" />
+                        {appState === AppState.SUCCESS ? 'Rescan' : 'Scan'}
+                      </button>
                     </div>
                   </div>
-                )}
-              </div>
-           </div>
+                  <p className="text-xs text-gray-400 mt-3 ml-2">
+                    Supports pages where <code>streamURL</code> is defined in the source script.
+                  </p>
+                </form>
+              ) : (
+                <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">
+                    Upload Audio File
+                  </label>
+                  <div
+                    onClick={triggerFileUpload}
+                    className="border-2 border-dashed border-gray-200 hover:border-rose-400 hover:bg-rose-50/50 rounded-2xl p-10 flex flex-col items-center justify-center cursor-pointer group transition-all"
+                  >
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileUpload}
+                      accept="audio/*"
+                      className="hidden"
+                    />
+                    <div className="w-16 h-16 bg-white shadow-lg rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform text-rose-500">
+                      <FileAudio className="w-8 h-8" />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-rose-600 transition-colors">
+                      Click to Upload MP3
+                    </h3>
+                    <p className="text-gray-400 text-sm font-medium">
+                      Supports MP3, WAV, M4A
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Status Section */}
@@ -236,14 +259,14 @@ function App() {
         {appState === AppState.ERROR && errorMessage && (
           <div className="max-w-2xl w-full bg-red-50 border border-red-100 text-red-800 p-5 rounded-2xl flex items-center gap-4 animate-in shake my-6 shadow-sm">
             <div className="bg-red-100 p-2 rounded-full">
-               <AlertCircle className="w-6 h-6 shrink-0 text-red-600" />
+              <AlertCircle className="w-6 h-6 shrink-0 text-red-600" />
             </div>
             <div className="flex-1">
               <p className="font-bold text-red-900">Operation Failed</p>
               <p className="text-sm opacity-90">{errorMessage}</p>
             </div>
-            <button 
-              onClick={handleReset} 
+            <button
+              onClick={handleReset}
               className="px-5 py-2.5 bg-white hover:bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm font-bold transition-colors shadow-sm"
             >
               Try Again
@@ -254,9 +277,9 @@ function App() {
         {/* Success Result */}
         {appState === AppState.SUCCESS && extractedStreamUrl && (
           <div className="animate-in zoom-in-95 duration-500 w-full flex justify-center">
-            <ResultCard 
-              streamUrl={extractedStreamUrl} 
-              onReset={handleReset} 
+            <ResultCard
+              streamUrl={extractedStreamUrl}
+              onReset={handleReset}
               isUpload={mode === 'upload'}
               fileName={uploadedFileName}
             />

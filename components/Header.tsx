@@ -7,7 +7,7 @@ const Header: React.FC = () => {
       <div className="flex items-center gap-3 mb-2">
         <div className="relative">
           <div className="bg-rose-500 rounded-lg p-1.5 shadow-lg shadow-rose-200">
-             <Radio className="w-6 h-6 text-white" />
+            <Radio className="w-6 h-6 text-white" />
           </div>
           <Waves className="w-4 h-4 text-rose-400 absolute -top-2 -right-2 animate-pulse" />
         </div>

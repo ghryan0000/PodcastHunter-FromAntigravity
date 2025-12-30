@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Globe, AlertCircle, UploadCloud, FileAudio, Link as LinkIcon } from 'lucide-react';
 import Header from './components/Header';
+import TitleBar from './components/TitleBar';
 import StepIndicator from './components/StepIndicator';
 import ResultCard from './components/ResultCard';
 import { fetchUrlSource } from './services/proxyService';
@@ -147,6 +148,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-100/90 via-white/40 to-rose-100/90 text-gray-900 flex flex-col font-sans selection:bg-rose-200 selection:text-rose-900">
+      <TitleBar />
       <Header />
 
       <main className="flex-1 container mx-auto px-4 py-8 flex flex-col items-center">

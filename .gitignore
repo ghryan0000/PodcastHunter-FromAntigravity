@@ -24,4 +24,7 @@ release/
 mac-arm64/
 out/
 dist/
-node_modules/
+# Python
+.venv/
+__pycache__/
+*.pyc

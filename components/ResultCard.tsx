@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Download, Music, ExternalLink, Play, Pause, AlertTriangle, FileText, Loader2, FileDown, RefreshCw, RotateCcw, RotateCw, Gauge, FileAudio } from 'lucide-react';
 import { downloadFile, fetchAudioAsBase64 } from '../services/proxyService';
 import { transcribeAudio } from '../services/geminiService';
+import { transcribeAudioLocally } from '../services/localTranscriptionService';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
 
 interface ResultCardProps {
@@ -123,11 +124,21 @@ const ResultCard: React.FC<ResultCardProps> = ({ streamUrl, onReset, isUpload = 
     setShowManualFallback(false);
     try {
       const base64 = await fetchAudioAsBase64(streamUrl);
-      const text = await transcribeAudio(base64);
+
+      // Try local transcription first
+      let text;
+      try {
+        console.log("Attempting local transcription...");
+        text = await transcribeAudioLocally(base64);
+      } catch (localError: any) {
+        console.warn("Local transcription failed, falling back to Gemini:", localError);
+        text = await transcribeAudio(base64);
+      }
+
       setTranscription(text);
     } catch (error: any) {
       console.error(error);
-      alert(`Auto-transcription failed: ${error.message}\n\nSwitching to manual mode.`);
+      alert(`Transcription failed: ${error.message}\n\nSwitching to manual mode.`);
       setShowManualFallback(true);
     } finally {
       setIsTranscribing(false);
@@ -364,7 +375,8 @@ const ResultCard: React.FC<ResultCardProps> = ({ streamUrl, onReset, isUpload = 
           {isTranscribing && (
             <div className="bg-gray-50 rounded-xl p-8 flex flex-col items-center justify-center text-gray-500 gap-3 border border-gray-100">
               <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
-              <span className="text-sm font-medium">Gemini is listening...</span>
+              <span className="text-sm font-medium">AI is listening offline...</span>
+              <p className="text-xs text-gray-400 mt-1">First run may take a moment to load models</p>
             </div>
           )}
 

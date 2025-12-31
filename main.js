@@ -1,6 +1,9 @@
-import { app, BrowserWindow, Menu, MenuItem } from 'electron';
+import { app, BrowserWindow, Menu, MenuItem, ipcMain } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { spawn } from 'child_process';
+import fs from 'fs';
+import os from 'os';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -60,5 +63,75 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit();
+    }
+});
+
+// IPC Handler for Transcription
+ipcMain.handle('transcribe-audio', async (event, { base64Audio, modelSize = 'base' }) => {
+    const tempDir = os.tmpdir();
+    const tempFilePath = path.join(tempDir, `podcast_audio_${Date.now()}.mp3`);
+
+    try {
+        // 1. Save base64 to temp file
+        const audioBuffer = Buffer.from(base64Audio, 'base64');
+        fs.writeFileSync(tempFilePath, audioBuffer);
+
+        console.log(`Saved temp audio to ${tempFilePath}`);
+
+        // 2. Locate FFmpeg (from ffmpeg-static)
+        // We'll try to find it in node_modules
+        const ffmpegModulePath = path.join(__dirname, 'node_modules', 'ffmpeg-static', 'ffmpeg');
+        const ffmpegPath = fs.existsSync(ffmpegModulePath) ? ffmpegModulePath : 'ffmpeg';
+
+        // 3. Run Python transcription script
+        // We use the virtual environment's python
+        const venvPythonPath = path.join(__dirname, '.venv', 'bin', 'python3');
+        const scriptPath = path.join(__dirname, 'transcribe.py');
+
+        console.log(`Running transcription with ${venvPythonPath}...`);
+
+        return new Promise((resolve, reject) => {
+            const pythonProcess = spawn(venvPythonPath, [scriptPath, tempFilePath, modelSize], {
+                env: {
+                    ...process.env,
+                    PATH: `${path.dirname(ffmpegPath)}:${process.env.PATH}`
+                }
+            });
+
+            let output = '';
+            let errorOutput = '';
+
+            pythonProcess.stdout.on('data', (data) => {
+                output += data.toString();
+            });
+
+            pythonProcess.stderr.on('data', (data) => {
+                errorOutput += data.toString();
+                console.log(`Whisper trace: ${data.toString()}`);
+            });
+
+            pythonProcess.on('close', (code) => {
+                // Cleanup temp file
+                if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+
+                if (code === 0) {
+                    try {
+                        const result = JSON.parse(output);
+                        if (result.error) {
+                            reject(new Error(result.error));
+                        } else {
+                            resolve(result.text);
+                        }
+                    } catch (e) {
+                        reject(new Error(`Failed to parse AI output: ${output}`));
+                    }
+                } else {
+                    reject(new Error(`AI process exited with code ${code}. Error: ${errorOutput}`));
+                }
+            });
+        });
+    } catch (error) {
+        if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+        throw error;
     }
 });

@@ -401,8 +401,12 @@ const ResultCard: React.FC<ResultCardProps> = ({ streamUrl, onReset, isUpload = 
                 <div className="flex-1">
                   <h5 className="font-bold text-orange-900 mb-2">Manual Transcription Mode</h5>
                   <p className="text-sm text-orange-800 leading-relaxed mb-4">
-                    The local AI service encountered an issue. You can still transcribe manually if needed:
+                    Offline AI requires the **Desktop App**. If you are on the website, please launch the local version:
                   </p>
+
+                  <div className="bg-orange-100/50 p-3 rounded-lg border border-orange-200 mb-4 font-mono text-[11px] text-orange-900 select-all">
+                    cd "/Users/ryanchang/Files in Mac mini/PodcastHunter-FromAntigravity" && npm run desktop
+                  </div>
 
                   <ol className="text-sm text-orange-900 space-y-2 list-decimal list-inside mb-4">
                     <li>Download the audio file using the button above</li>

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Download, Music, ExternalLink, Play, Pause, AlertTriangle, FileText, Loader2, FileDown, RefreshCw, RotateCcw, RotateCw, Gauge, FileAudio } from 'lucide-react';
 import { downloadFile, fetchAudioAsBase64 } from '../services/proxyService';
-import { transcribeAudio } from '../services/geminiService';
 import { transcribeAudioLocally } from '../services/localTranscriptionService';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
 
@@ -125,15 +124,9 @@ const ResultCard: React.FC<ResultCardProps> = ({ streamUrl, onReset, isUpload = 
     try {
       const base64 = await fetchAudioAsBase64(streamUrl);
 
-      // Try local transcription first
-      let text;
-      try {
-        console.log("Attempting local transcription...");
-        text = await transcribeAudioLocally(base64);
-      } catch (localError: any) {
-        console.warn("Local transcription failed, falling back to Gemini:", localError);
-        text = await transcribeAudio(base64);
-      }
+      // Use local transcription exclusively
+      console.log("Running local Whisper transcription...");
+      const text = await transcribeAudioLocally(base64);
 
       setTranscription(text);
     } catch (error: any) {

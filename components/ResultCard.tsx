@@ -125,21 +125,32 @@ const ResultCard: React.FC<ResultCardProps> = ({ streamUrl, onReset, isUpload = 
     try {
       const base64 = await fetchAudioAsBase64(streamUrl);
 
-      const isElectron = !!(window as any).electronAPI;
+      const isElectron = /Electron/i.test(navigator.userAgent) && !!(window as any).electronAPI;
       let text;
 
       if (isElectron) {
-        console.log("Running local Whisper transcription...");
+        console.log("Electron detected: using local Whisper.");
         text = await transcribeAudioLocally(base64);
       } else {
-        console.log("Browser environment detected. Falling back to Gemini API...");
-        text = await transcribeAudio(base64);
+        console.log("Web browser detected: using Gemini API.");
+        // If they are on the web, they MUST use Gemini. 
+        // If Gemini is out of quota, we should tell them to use the desktop app for offline mode.
+        try {
+          text = await transcribeAudio(base64);
+        } catch (geminiError: any) {
+          throw new Error(`Cloud transcription failed (likely quota exceeded). Please use the Desktop app for unlimited offline transcription!`);
+        }
       }
 
       setTranscription(text);
     } catch (error: any) {
       console.error(error);
-      alert(`Transcription failed: ${error.message}\n\nFalling back to manual mode.`);
+      const isWeb = !(/Electron/i.test(navigator.userAgent) && !!(window as any).electronAPI);
+      const customMessage = isWeb
+        ? `${error.message}\n\nTIP: Launch the Desktop app for offline mode!`
+        : `Transcription failed: ${error.message}`;
+
+      alert(customMessage);
       setShowManualFallback(true);
     } finally {
       setIsTranscribing(false);

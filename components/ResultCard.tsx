@@ -408,7 +408,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ streamUrl, onReset, isUpload = 
                       Unlock unlimited **Offline AI** by launching the local app window:
                     </p>
                     <div className="bg-orange-100/50 p-3 rounded-lg border border-orange-200 font-mono text-[10px] text-orange-900 select-all overflow-x-auto">
-                      cd "/Users/ryanchang/Files in Mac mini/PodcastHunter-FromAntigravity" && npm run desktop
+                      cd /path/to/PodcastHunter-FromAntigravity && npm run desktop
                     </div>
                   </div>
 

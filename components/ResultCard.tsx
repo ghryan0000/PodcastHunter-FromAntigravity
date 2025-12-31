@@ -399,27 +399,35 @@ const ResultCard: React.FC<ResultCardProps> = ({ streamUrl, onReset, isUpload = 
               <div className="flex items-start gap-3">
                 <AlertTriangle className="w-5 h-5 shrink-0 text-orange-600 mt-0.5" />
                 <div className="flex-1">
-                  <h5 className="font-bold text-orange-900 mb-2">Manual Transcription Mode</h5>
-                  <p className="text-sm text-orange-800 leading-relaxed mb-4">
-                    Offline AI requires the **Desktop App**. If you are on the website, please launch the local version:
-                  </p>
+                  <h5 className="font-bold text-orange-900 mb-4">Transcription Support</h5>
 
-                  <div className="bg-orange-100/50 p-3 rounded-lg border border-orange-200 mb-4 font-mono text-[11px] text-orange-900 select-all">
-                    cd "/Users/ryanchang/Files in Mac mini/PodcastHunter-FromAntigravity" && npm run desktop
+                  {/* Option A */}
+                  <div className="mb-6 pb-6 border-b border-orange-200/50">
+                    <h6 className="text-xs font-bold uppercase tracking-wider text-orange-700 mb-2">Option A: Switch to Desktop (Recommended)</h6>
+                    <p className="text-sm text-orange-800 leading-relaxed mb-3">
+                      Unlock unlimited **Offline AI** by launching the local app window:
+                    </p>
+                    <div className="bg-orange-100/50 p-3 rounded-lg border border-orange-200 font-mono text-[10px] text-orange-900 select-all overflow-x-auto">
+                      cd "/Users/ryanchang/Files in Mac mini/PodcastHunter-FromAntigravity" && npm run desktop
+                    </div>
                   </div>
 
-                  <ol className="text-sm text-orange-900 space-y-2 list-decimal list-inside mb-4">
-                    <li>Download the audio file using the button above</li>
-                    <li>Use your preferred transcription tool or service</li>
-                    <li>Paste the transcription result below</li>
-                  </ol>
+                  {/* Option B */}
+                  <div>
+                    <h6 className="text-xs font-bold uppercase tracking-wider text-orange-700 mb-2">Option B: Manual Transcription</h6>
+                    <ol className="text-sm text-orange-900 space-y-1.5 list-decimal list-inside mb-4 opacity-90">
+                      <li>Download the audio file above</li>
+                      <li>Use an external transcription tool</li>
+                      <li>Paste the result below</li>
+                    </ol>
 
-                  <textarea
-                    value={transcription || ''}
-                    onChange={(e) => setTranscription(e.target.value)}
-                    placeholder="Paste your transcription here..."
-                    className="w-full h-32 bg-white border border-orange-300 rounded-lg p-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-y leading-relaxed"
-                  />
+                    <textarea
+                      value={transcription || ''}
+                      onChange={(e) => setTranscription(e.target.value)}
+                      placeholder="Paste your text here..."
+                      className="w-full h-32 bg-white border border-orange-300 rounded-lg p-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-y leading-relaxed"
+                    />
+                  </div>
                 </div>
               </div>
             </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Download, Music, ExternalLink, Play, Pause, AlertTriangle, FileText, Loader2, FileDown, RefreshCw, RotateCcw, RotateCw, Gauge, FileAudio } from 'lucide-react';
 import { downloadFile, fetchAudioAsBase64 } from '../services/proxyService';
+import { transcribeAudio } from '../services/geminiService';
 import { transcribeAudioLocally } from '../services/localTranscriptionService';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
 
@@ -124,9 +125,16 @@ const ResultCard: React.FC<ResultCardProps> = ({ streamUrl, onReset, isUpload = 
     try {
       const base64 = await fetchAudioAsBase64(streamUrl);
 
-      // Use local transcription exclusively
-      console.log("Running local Whisper transcription...");
-      const text = await transcribeAudioLocally(base64);
+      const isElectron = !!(window as any).electronAPI;
+      let text;
+
+      if (isElectron) {
+        console.log("Running local Whisper transcription...");
+        text = await transcribeAudioLocally(base64);
+      } else {
+        console.log("Browser environment detected. Falling back to Gemini API...");
+        text = await transcribeAudio(base64);
+      }
 
       setTranscription(text);
     } catch (error: any) {
@@ -368,8 +376,10 @@ const ResultCard: React.FC<ResultCardProps> = ({ streamUrl, onReset, isUpload = 
           {isTranscribing && (
             <div className="bg-gray-50 rounded-xl p-8 flex flex-col items-center justify-center text-gray-500 gap-3 border border-gray-100">
               <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
-              <span className="text-sm font-medium">AI is listening offline...</span>
-              <p className="text-xs text-gray-400 mt-1">First run may take a moment to load models</p>
+              <span className="text-sm font-medium">
+                {!!(window as any).electronAPI ? "AI is listening offline..." : "AI is listening via Cloud..."}
+              </span>
+              {!!(window as any).electronAPI && <p className="text-xs text-gray-400 mt-1">First run may take a moment to load models</p>}
             </div>
           )}
 

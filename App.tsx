@@ -44,7 +44,7 @@ function App() {
 
   const [steps, setSteps] = useState<StepStatus[]>([
     { id: 'fetch', label: 'Fetching Source Code', status: 'pending' },
-    { id: 'analyze', label: 'Gemini AI Analysis', status: 'pending' },
+    { id: 'analyze', label: 'AI Analysis', status: 'pending' },
     { id: 'extract', label: 'Extracting Audio Stream', status: 'pending' },
   ]);
 
@@ -63,7 +63,7 @@ function App() {
     setUploadedFileName(null);
     setSteps([
       { id: 'fetch', label: 'Fetching Webpage Source', status: 'loading' },
-      { id: 'analyze', label: 'Gemini AI Analysis', status: 'pending' },
+      { id: 'analyze', label: 'AI Analysis', status: 'pending' },
       { id: 'extract', label: 'Extracting Audio Stream', status: 'pending' },
     ]);
 
@@ -136,7 +136,7 @@ function App() {
     setUploadedFileName(null);
     setSteps([
       { id: 'fetch', label: 'Fetching Source Code', status: 'pending' },
-      { id: 'analyze', label: 'Gemini AI Analysis', status: 'pending' },
+      { id: 'analyze', label: 'AI Analysis', status: 'pending' },
       { id: 'extract', label: 'Extracting Audio Stream', status: 'pending' },
     ]);
     if (fileInputRef.current) {
@@ -291,7 +291,7 @@ function App() {
       </main>
 
       <footer className="w-full py-8 text-center text-gray-400 text-sm">
-        <p className="font-medium">Powered by Gemini 1.5 Flash • Uses allorigins.win for proxy</p>
+        <p className="font-medium">Powered by Whisper & Gemini • Local AI Offline Mode</p>
       </footer>
     </div>
   );

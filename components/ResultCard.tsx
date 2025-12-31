@@ -131,7 +131,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ streamUrl, onReset, isUpload = 
       setTranscription(text);
     } catch (error: any) {
       console.error(error);
-      alert(`Transcription failed: ${error.message}\n\nSwitching to manual mode.`);
+      alert(`Transcription failed: ${error.message}\n\nFalling back to manual mode.`);
       setShowManualFallback(true);
     } finally {
       setIsTranscribing(false);
@@ -380,13 +380,12 @@ const ResultCard: React.FC<ResultCardProps> = ({ streamUrl, onReset, isUpload = 
                 <div className="flex-1">
                   <h5 className="font-bold text-orange-900 mb-2">Manual Transcription Mode</h5>
                   <p className="text-sm text-orange-800 leading-relaxed mb-4">
-                    The AI API quota has been exceeded. You can still transcribe using your own Gemini account:
+                    The local AI service encountered an issue. You can still transcribe manually if needed:
                   </p>
 
                   <ol className="text-sm text-orange-900 space-y-2 list-decimal list-inside mb-4">
                     <li>Download the audio file using the button above</li>
-                    <li>Visit <a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer" className="underline font-semibold">gemini.google.com</a></li>
-                    <li>Upload the audio file and ask Gemini to transcribe it</li>
+                    <li>Use your preferred transcription tool or service</li>
                     <li>Paste the transcription result below</li>
                   </ol>
 
